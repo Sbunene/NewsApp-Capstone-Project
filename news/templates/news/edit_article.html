@@ -1,0 +1,31 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+<div class="article-card">
+    <div class="article-header">
+        <h2>Edit Article</h2>
+    </div>
+    <div class="article-content">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-weight: bold; margin-bottom: 0.5rem;">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                    <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.25rem;">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="action-buttons">
+                <button type="submit" class="btn">Update Article</button>
+                <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

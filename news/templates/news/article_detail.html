@@ -1,0 +1,34 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+<div class="article-card">
+    <div class="article-header">
+        <h1>{{ article.title }}</h1>
+    </div>
+    <div class="article-content">
+        <div style="font-size: 1.1rem; line-height: 1.8;">
+            {{ article.content|linebreaks }}
+        </div>
+        <div class="article-meta">
+            <div>
+                <strong>Author:</strong> {{ article.journalist.username }}<br>
+                <strong>Published:</strong> {{ article.created_at|date:"F d, Y" }}<br>
+                {% if article.publisher %}
+                    <strong>Publisher:</strong> {{ article.publisher.name }}
+                {% endif %}
+            </div>
+            <span class="article-status {% if article.is_approved %}status-approved{% else %}status-pending{% endif %}">
+                {% if article.is_approved %}✅ Published{% else %}⏳ Under Review{% endif %}
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="action-buttons">
+    <a href="{% url 'dashboard' %}" class="btn btn-outline">← Back to Dashboard</a>
+    
+    {% if user.role == 'JOURNALIST' and article.journalist == user %}
+        <a href="{% url 'edit_article' article.id %}" class="btn" style="background: #f39c12;">✏️ Edit Article</a>
+    {% endif %}
+</div>
+{% endblock %}

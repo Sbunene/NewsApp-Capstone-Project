@@ -1,0 +1,36 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+<div class="card">
+    <h2>Articles Pending Approval</h2>
+    
+    {% if pending_articles %}
+        {% for article in pending_articles %}
+            <div class="article pending">
+                <h3>{{ article.title }}</h3>
+                <p><strong>Author:</strong> {{ article.journalist.username }}</p>
+                <p><strong>Publisher:</strong> {{ article.publisher.name|default:"Independent" }}</p>
+                <p><strong>Submitted:</strong> {{ article.created_at }}</p>
+                
+                <div class="article-content">
+                    <p>{{ article.content|linebreaks }}</p>
+                </div>
+                
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <a href="{% url 'approve_article' article.id %}" class="btn" style="background: #28a745;">
+                        ✅ Approve Article
+                    </a>
+                    <a href="{% url 'reject_article' article.id %}" class="btn" style="background: #dc3545;">
+                        ❌ Reject Article
+                    </a>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="card" style="text-align: center; padding: 2rem;">
+            <h3>🎉 No Pending Articles!</h3>
+            <p>All articles have been reviewed. Check back later for new submissions.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

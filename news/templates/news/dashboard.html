@@ -1,0 +1,128 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <h1>Welcome to NewsApp</h1>
+    <p>Your trusted source for the latest news and updates</p>
+</div>
+
+<!-- User Welcome Card -->
+<div class="article-card">
+    <div class="article-header">
+        <h3>Welcome, {{ user.username }}!</h3>
+    </div>
+    <div class="article-content">
+        <p><strong>Role:</strong> {{ user.get_role_display }}</p>
+        <p><strong>Message:</strong> {{ message }}</p>
+        {% if user.role == 'JOURNALIST' %}
+            <div class="action-buttons">
+                <a href="{% url 'create_article' %}" class="btn">Write New Article</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Articles Section -->
+{% if user.role == 'READER' %}
+    <h2 style="margin: 2rem 0 1rem 0;">Latest News</h2>
+    <div class="news-grid">
+        {% for article in articles %}
+            <div class="article-card">
+                <div class="article-header">
+                    <h3>{{ article.title }}</h3>
+                </div>
+                <div class="article-content">
+                    <p>{{ article.content|truncatewords:50 }}</p>
+                    <div class="article-meta">
+                        <div>
+                            <strong>By:</strong> {{ article.journalist.username }}<br>
+                            <strong>Date:</strong> {{ article.created_at|date:"M d, Y" }}
+                        </div>
+                        <span class="article-status status-approved">Published</span>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <a href="{% url 'article_detail' article.id %}" class="btn" style="background: #3498db;">Read Full Article</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="article-card">
+                <div class="article-content">
+                    <p>No articles available at the moment. Check back later for the latest news!</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+{% elif user.role == 'JOURNALIST' %}
+    <h2 style="margin: 2rem 0 1rem 0;">Your Articles</h2>
+    <div class="news-grid">
+        {% for article in articles %}
+            <div class="article-card">
+                <div class="article-header">
+                    <h3>{{ article.title }}</h3>
+                </div>
+                <div class="article-content">
+                    <p>{{ article.content|truncatewords:50 }}</p>
+                    <div class="article-meta">
+                        <div>
+                            <strong>Created:</strong> {{ article.created_at|date:"M d, Y" }}<br>
+                            {% if article.publisher %}
+                                <strong>Publisher:</strong> {{ article.publisher.name }}
+                            {% endif %}
+                        </div>
+                        <span class="article-status {% if article.is_approved %}status-approved{% else %}status-pending{% endif %}">
+                            {% if article.is_approved %}Approved{% else %}Pending{% endif %}
+                        </span>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'edit_article' article.id %}" class="btn" style="background: #f39c12;">Edit</a>
+                        <a href="{% url 'delete_article' article.id %}" class="btn" style="background: #e74c3c;">Delete</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="article-card">
+                <div class="article-content">
+                    <p>You haven't written any articles yet.</p>
+                    <div class="action-buttons">
+                        <a href="{% url 'create_article' %}" class="btn">Start Writing Your First Article</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+{% elif user.role == 'EDITOR' %}
+    <h2 style="margin: 2rem 0 1rem 0;">Articles Pending Approval</h2>
+    <div class="news-grid">
+        {% for article in pending_articles %}
+            <div class="article-card">
+                <div class="article-header">
+                    <h3>{{ article.title }}</h3>
+                </div>
+                <div class="article-content">
+                    <p>{{ article.content|truncatewords:50 }}</p>
+                    <div class="article-meta">
+                        <div>
+                            <strong>Author:</strong> {{ article.journalist.username }}<br>
+                            <strong>Submitted:</strong> {{ article.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="{% url 'approve_article' article.id %}" class="btn" style="background: #27ae60;">Approve</a>
+                        <a href="{% url 'reject_article' article.id %}" class="btn" style="background: #e74c3c;">Reject</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="article-card">
+                <div class="article-content">
+                    <p>No articles pending approval! All caught up.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
