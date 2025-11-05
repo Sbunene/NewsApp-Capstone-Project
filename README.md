@@ -138,6 +138,12 @@ python manage.py runserver
 Access the application at: http://127.0.0.1:8000/
 Admin panel: http://127.0.0.1:8000/admin/
 
+## User Accounts for Testing
+
+- **Reader**: `admin` / `admin123` - Can view approved articles
+- **Journalist**: `tech_journalist` / `test123` - Can create and manage articles
+- **Editor**: `sample_editor` / `test123` - Can approve/reject articles
+
 ## Project Structure
 
 - `news/` - Main application directory
