@@ -1,13 +1,23 @@
+"""Forms used by the News app.
+
+This module exposes a custom user creation form and an Article form.
+The ArticleForm accepts an optional `request` kwarg so that the
+form.save() can set the article.journalist from the currently logged
+in user instead of relying on the view to assign it.
+"""
+
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser, Article, Publisher
 
+
 class CustomUserCreationForm(UserCreationForm):
+    """A lightweight user creation form that asks for role and email."""
     ROLE_CHOICES = [
         ('READER', 'Reader'),
         ('JOURNALIST', 'Journalist'),
     ]
-    
+
     role = forms.ChoiceField(choices=ROLE_CHOICES, initial='READER')
     email = forms.EmailField(required=True)
 
@@ -23,7 +33,15 @@ class CustomUserCreationForm(UserCreationForm):
             user.save()
         return user
 
+
 class ArticleForm(forms.ModelForm):
+    """Form to create/edit an Article.
+
+    When the view passes the current `request` to the form via the
+    `request` keyword argument, the `save()` method will assign
+    `article.journalist = request.user` automatically.
+    """
+
     class Meta:
         model = Article
         fields = ('title', 'content', 'publisher')
@@ -31,7 +49,7 @@ class ArticleForm(forms.ModelForm):
             'content': forms.Textarea(attrs={'rows': 10, 'placeholder': 'Write your article content here...'}),
             'title': forms.TextInput(attrs={'placeholder': 'Enter article title...'}),
         }
-    
+
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)

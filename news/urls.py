@@ -1,3 +1,7 @@
+"""URL definitions for the `news` app.
+
+Maps web UI views and lightweight REST API endpoints.
+"""
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from . import views

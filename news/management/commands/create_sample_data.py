@@ -1,12 +1,56 @@
+"""Django management command to create sample data for testing.
+
+This command populates the database with sample publishers, users (journalists
+and editors), and articles (both approved and pending) for development and
+testing purposes. Useful for demonstrating application functionality without
+manual data entry.
+"""
+
 from django.core.management.base import BaseCommand
 from news.models import CustomUser, Article, Publisher
 from django.utils import timezone
 from datetime import timedelta
 
+
 class Command(BaseCommand):
-    help = 'Creates sample data for testing'
+    """Management command to create sample data for development and testing.
+    
+    Creates sample publishers, test users, and articles to populate the database
+    with realistic data. This allows developers to test the application without
+    manually creating test data through the UI.
+    
+    Creates:
+        - 3 publishers (Tech News Network, Sports Daily, Politics Today)
+        - 2 journalists (tech_journalist, sports_journalist)
+        - 1 editor (sample_editor)
+        - 5 approved articles
+        - 2 pending articles
+        
+    Usage:
+        python manage.py create_sample_data
+        
+    Login Credentials Created:
+        - tech_journalist / test123
+        - sports_journalist / test123
+        - sample_editor / test123
+        - admin / admin123 (if created separately)
+    """
+    help = 'Creates sample data (publishers, users, articles) for testing'
 
     def handle(self, *args, **options):
+        """Execute the command to create sample data.
+        
+        Args:
+            *args: Unused positional arguments
+            **options: Unused keyword arguments from command line
+            
+        Returns:
+            None. Outputs success messages to stdout.
+            
+        Side Effects:
+            Creates publishers, users, and articles in the database.
+            Skips creation if entities with same identifiers already exist.
+        """
         # Create sample publishers
         tech_publisher, created = Publisher.objects.get_or_create(name='Tech News Network')
         sports_publisher, created = Publisher.objects.get_or_create(name='Sports Daily')
