@@ -1,0 +1,73 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+<div class="hero" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+    <h1>📰 Newsletters</h1>
+    <p>Stay updated with the latest newsletters from journalists</p>
+</div>
+
+{% if user.role == 'JOURNALIST' %}
+<div class="article-card">
+    <div class="article-content">
+        <div class="action-buttons">
+            <a href="{% url 'create_newsletter' %}" class="btn" style="background: #9b59b6;">Create New Newsletter</a>
+            <a href="{% url 'dashboard' %}" class="btn" style="background: #6c757d;">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<h2 style="margin: 2rem 0 1rem 0;">
+    {% if user.role == 'JOURNALIST' %}
+        Your Newsletters
+    {% elif user.role == 'READER' %}
+        Newsletters from Subscribed Journalists
+    {% elif user.role == 'EDITOR' %}
+        All Newsletters
+    {% endif %}
+</h2>
+
+<div class="news-grid">
+    {% for newsletter in newsletters %}
+        <div class="article-card">
+            <div class="article-header" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+                <h3>{{ newsletter.title }}</h3>
+            </div>
+            <div class="article-content">
+                <p>{{ newsletter.content|truncatewords:30 }}</p>
+                <div class="article-meta">
+                    <div>
+                        <strong>By:</strong> {{ newsletter.journalist.username }}<br>
+                        <strong>Published:</strong> {{ newsletter.created_at|date:"M d, Y" }}
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <a href="{% url 'newsletter_detail' newsletter.id %}" class="btn" style="background: #3498db;">Read Full Newsletter</a>
+                    {% if user.role == 'JOURNALIST' and newsletter.journalist == user %}
+                        <a href="{% url 'edit_newsletter' newsletter.id %}" class="btn" style="background: #f39c12;">Edit</a>
+                        <a href="{% url 'delete_newsletter' newsletter.id %}" class="btn" style="background: #e74c3c;">Delete</a>
+                    {% elif user.role == 'EDITOR' %}
+                        <a href="{% url 'edit_newsletter' newsletter.id %}" class="btn" style="background: #f39c12;">Edit</a>
+                        <a href="{% url 'delete_newsletter' newsletter.id %}" class="btn" style="background: #e74c3c;">Delete</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="article-card">
+            <div class="article-content">
+                {% if user.role == 'JOURNALIST' %}
+                    <p>You haven't created any newsletters yet.</p>
+                    <div class="action-buttons">
+                        <a href="{% url 'create_newsletter' %}" class="btn" style="background: #9b59b6;">Create Your First Newsletter</a>
+                    </div>
+                {% elif user.role == 'READER' %}
+                    <p>No newsletters available from your subscribed journalists. Subscribe to journalists to receive their newsletters!</p>
+                {% elif user.role == 'EDITOR' %}
+                    <p>No newsletters have been created yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -8,14 +8,19 @@ in user instead of relying on the view to assign it.
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Article, Publisher
+from .models import CustomUser, Article, Publisher, Newsletter
 
 
 class CustomUserCreationForm(UserCreationForm):
-    """A lightweight user creation form that asks for role and email."""
+    """A lightweight user creation form that asks for role and email.
+    
+    Allows users to register as Reader, Journalist, or Editor.
+    Each role has different permissions and access levels.
+    """
     ROLE_CHOICES = [
         ('READER', 'Reader'),
         ('JOURNALIST', 'Journalist'),
+        ('EDITOR', 'Editor'),
     ]
 
     role = forms.ChoiceField(choices=ROLE_CHOICES, initial='READER')
@@ -63,3 +68,31 @@ class ArticleForm(forms.ModelForm):
         if commit:
             article.save()
         return article
+
+
+class NewsletterForm(forms.ModelForm):
+    """Form to create/edit a Newsletter.
+    
+    Similar to ArticleForm, accepts an optional `request` kwarg to
+    automatically assign the journalist field from the logged-in user.
+    """
+    
+    class Meta:
+        model = Newsletter
+        fields = ('title', 'content')
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 10, 'placeholder': 'Write your newsletter content here...'}),
+            'title': forms.TextInput(attrs={'placeholder': 'Enter newsletter title...'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+    
+    def save(self, commit=True):
+        newsletter = super().save(commit=False)
+        if self.request:
+            newsletter.journalist = self.request.user
+        if commit:
+            newsletter.save()
+        return newsletter

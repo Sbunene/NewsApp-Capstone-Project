@@ -18,6 +18,16 @@
         {% if user.role == 'JOURNALIST' %}
             <div class="action-buttons">
                 <a href="{% url 'create_article' %}" class="btn">Write New Article</a>
+                <a href="{% url 'create_newsletter' %}" class="btn" style="background: #9b59b6;">Create Newsletter</a>
+                <a href="{% url 'newsletter_list' %}" class="btn" style="background: #16a085;">View Newsletters</a>
+            </div>
+        {% elif user.role == 'READER' %}
+            <div class="action-buttons">
+                <a href="{% url 'newsletter_list' %}" class="btn" style="background: #16a085;">View Newsletters</a>
+            </div>
+        {% elif user.role == 'EDITOR' %}
+            <div class="action-buttons">
+                <a href="{% url 'newsletter_list' %}" class="btn" style="background: #16a085;">View All Newsletters</a>
             </div>
         {% endif %}
     </div>

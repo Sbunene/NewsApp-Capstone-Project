@@ -1,0 +1,53 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+<div class="article-card">
+    <div class="article-header" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+        <h3>Create New Newsletter</h3>
+    </div>
+    <div class="article-content">
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #2c3e50;">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                    <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.3rem;">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <div class="action-buttons">
+                <button type="submit" class="btn" style="background: #9b59b6;">Publish Newsletter</button>
+                <a href="{% url 'newsletter_list' %}" class="btn" style="background: #6c757d;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    input[type="text"], textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: border-color 0.3s;
+    }
+    
+    input[type="text"]:focus, textarea:focus {
+        outline: none;
+        border-color: #9b59b6;
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 200px;
+    }
+</style>
+{% endblock %}

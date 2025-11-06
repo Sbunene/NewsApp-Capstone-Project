@@ -1,0 +1,32 @@
+{% extends 'news/base.html' %}
+
+{% block content %}
+<div class="article-card">
+    <div class="article-header" style="background: linear-gradient(135deg, #9b59b6, #8e44ad);">
+        <h3>{{ newsletter.title }}</h3>
+    </div>
+    <div class="article-content">
+        <div class="article-meta" style="border-bottom: 1px solid #eee; padding-bottom: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <strong>Author:</strong> {{ newsletter.journalist.username }}<br>
+                <strong>Published:</strong> {{ newsletter.created_at|date:"F d, Y \a\t h:i A" }}
+            </div>
+        </div>
+        
+        <div style="line-height: 1.8; font-size: 1.05rem;">
+            {{ newsletter.content|linebreaks }}
+        </div>
+        
+        <div class="action-buttons" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+            <a href="{% url 'newsletter_list' %}" class="btn" style="background: #6c757d;">Back to Newsletters</a>
+            {% if user.role == 'JOURNALIST' and newsletter.journalist == user %}
+                <a href="{% url 'edit_newsletter' newsletter.id %}" class="btn" style="background: #f39c12;">Edit Newsletter</a>
+                <a href="{% url 'delete_newsletter' newsletter.id %}" class="btn" style="background: #e74c3c;">Delete Newsletter</a>
+            {% elif user.role == 'EDITOR' %}
+                <a href="{% url 'edit_newsletter' newsletter.id %}" class="btn" style="background: #f39c12;">Edit Newsletter</a>
+                <a href="{% url 'delete_newsletter' newsletter.id %}" class="btn" style="background: #e74c3c;">Delete Newsletter</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

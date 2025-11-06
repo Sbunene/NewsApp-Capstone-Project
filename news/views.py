@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.http import JsonResponse
 from .models import CustomUser, Article, Publisher, Newsletter
-from .forms import ArticleForm, CustomUserCreationForm
+from .forms import ArticleForm, CustomUserCreationForm, NewsletterForm
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db import models
@@ -72,12 +72,17 @@ def dashboard(request):
         if user.role == 'READER':
             context['message'] = 'Welcome Reader! Browse our latest news.'
             context['articles'] = Article.objects.filter(is_approved=True).select_related('journalist', 'publisher')
+            context['newsletters'] = Newsletter.objects.filter(
+                journalist__in=user.subscribed_journalists.all()
+            ).select_related('journalist')[:5]
         elif user.role == 'JOURNALIST':
-            context['message'] = 'Welcome Journalist! Create and manage your articles.'
+            context['message'] = 'Welcome Journalist! Create and manage your articles and newsletters.'
             context['articles'] = Article.objects.filter(journalist=user).select_related('publisher')
+            context['newsletters'] = Newsletter.objects.filter(journalist=user)[:5]
         elif user.role == 'EDITOR':
             context['message'] = 'Welcome Editor! Review and approve articles.'
             context['pending_articles'] = Article.objects.filter(is_approved=False).select_related('journalist', 'publisher')
+            context['newsletters'] = Newsletter.objects.all().select_related('journalist')[:5]
         else:
             messages.warning(request, 'Your account has no role assigned. Please contact support.')
             context['message'] = 'Account configuration needed'
@@ -412,3 +417,144 @@ def article_detail(request, article_id):
             f'Error retrieving article: {str(e)}. Please try again.'
         )
     return redirect('dashboard')
+
+# Newsletter Views
+
+@login_required
+def newsletter_list(request):
+    """Display list of newsletters based on user role.
+    
+    Readers see all newsletters from subscribed journalists.
+    Journalists see their own newsletters.
+    Editors see all newsletters.
+    
+    Returns:
+        Rendered newsletter_list.html with appropriate newsletters
+    """
+    user = request.user
+    
+    try:
+        if user.role == 'READER':
+            newsletters = Newsletter.objects.filter(
+                journalist__in=user.subscribed_journalists.all()
+            ).select_related('journalist').order_by('-created_at')
+        elif user.role == 'JOURNALIST':
+            newsletters = Newsletter.objects.filter(
+                journalist=user
+            ).order_by('-created_at')
+        elif user.role == 'EDITOR':
+            newsletters = Newsletter.objects.all().select_related(
+                'journalist'
+            ).order_by('-created_at')
+        else:
+            newsletters = []
+        
+        return render(
+            request,
+            'news/newsletter_list.html',
+            {'newsletters': newsletters}
+        )
+    except Exception as e:
+        messages.error(request, f'Error loading newsletters: {str(e)}')
+        return redirect('dashboard')
+
+@login_required
+def newsletter_detail(request, newsletter_id):
+    """Display detailed view of a single newsletter.
+    
+    Args:
+        newsletter_id: ID of the newsletter to display
+        
+    Returns:
+        On success: Renders newsletter_detail.html
+        On error/no access: Redirects to newsletter list with message
+    """
+    try:
+        newsletter = get_object_or_404(Newsletter, id=newsletter_id)
+        user = request.user
+        
+        if user.role == 'READER':
+            if newsletter.journalist not in user.subscribed_journalists.all():
+                messages.error(request, 'You can only view newsletters from journalists you subscribe to.')
+                return redirect('newsletter_list')
+        elif user.role == 'JOURNALIST':
+            if newsletter.journalist != user:
+                messages.error(request, 'You can only view your own newsletters.')
+                return redirect('newsletter_list')
+        
+        return render(request, 'news/newsletter_detail.html', {'newsletter': newsletter})
+    except Newsletter.DoesNotExist:
+        messages.error(request, f'Newsletter with ID {newsletter_id} not found.')
+    except Exception as e:
+        messages.error(request, f'Error retrieving newsletter: {str(e)}')
+    return redirect('newsletter_list')
+
+@login_required
+@permission_required('news.add_newsletter', raise_exception=True)
+def create_newsletter(request):
+    """Create a new Newsletter (Journalists only)."""
+    if request.user.role != 'JOURNALIST':
+        messages.error(request, 'Only journalists can create newsletters.')
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = NewsletterForm(request.POST, request=request)
+        if form.is_valid():
+            newsletter = form.save()
+            messages.success(request, f'Newsletter "{newsletter.title}" created successfully!')
+            return redirect('newsletter_list')
+    else:
+        form = NewsletterForm(request=request)
+    
+    return render(request, 'news/create_newsletter.html', {'form': form})
+
+@login_required
+@permission_required('news.change_newsletter', raise_exception=True)
+def edit_newsletter(request, newsletter_id):
+    """Edit an existing newsletter."""
+    try:
+        newsletter = get_object_or_404(Newsletter, id=newsletter_id)
+        
+        if request.user.role == 'JOURNALIST' and newsletter.journalist != request.user:
+            messages.error(request, 'You can only edit your own newsletters.')
+            return redirect('newsletter_list')
+        
+        if request.method == 'POST':
+            form = NewsletterForm(request.POST, instance=newsletter, request=request)
+            if form.is_valid():
+                form.save()
+                messages.success(request, f'Newsletter "{newsletter.title}" updated successfully!')
+                return redirect('newsletter_list')
+        else:
+            form = NewsletterForm(instance=newsletter, request=request)
+        
+        return render(request, 'news/edit_newsletter.html', {'form': form, 'newsletter': newsletter})
+    except Newsletter.DoesNotExist:
+        messages.error(request, f'Newsletter with ID {newsletter_id} not found.')
+    except Exception as e:
+        messages.error(request, f'Error editing newsletter: {str(e)}')
+    return redirect('newsletter_list')
+
+@login_required
+@permission_required('news.delete_newsletter', raise_exception=True)
+def delete_newsletter(request, newsletter_id):
+    """Delete a newsletter."""
+    try:
+        newsletter = get_object_or_404(Newsletter, id=newsletter_id)
+        
+        if request.user.role == 'JOURNALIST' and newsletter.journalist != request.user:
+            messages.error(request, 'You can only delete your own newsletters.')
+            return redirect('newsletter_list')
+        
+        if request.method == 'POST':
+            newsletter_title = newsletter.title
+            newsletter.delete()
+            messages.success(request, f'Newsletter "{newsletter_title}" has been permanently deleted.')
+            return redirect('newsletter_list')
+        
+        return render(request, 'news/delete_newsletter.html', {'newsletter': newsletter})
+    except Newsletter.DoesNotExist:
+        messages.error(request, f'Newsletter with ID {newsletter_id} not found.')
+    except Exception as e:
+        messages.error(request, f'Error deleting newsletter: {str(e)}')
+    return redirect('newsletter_list')
