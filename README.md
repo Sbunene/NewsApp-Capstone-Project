@@ -174,3 +174,57 @@ Run the test suite:
 ```bash
 python manage.py test
 ```
+
+## Troubleshooting
+
+### 403 Forbidden Error When Creating Articles or Newsletters
+
+If journalists are getting a 403 Forbidden error when trying to create articles or newsletters, this is likely due to missing group permissions. The application now automatically creates groups and assigns permissions after migrations.
+
+**Automatic Fix (Recommended):**
+The application now uses a post_migrate signal to automatically create groups and permissions. Simply run:
+```bash
+python manage.py migrate
+```
+This will automatically create the Reader, Journalist, and Editor groups with proper permissions.
+
+**Manual Fix (If Needed):**
+If you still experience issues, you can manually run the create_groups command:
+```bash
+python manage.py create_groups
+```
+
+**For Existing Users:**
+Existing users will automatically be assigned to the correct group when they log in or when their account is saved. You can also trigger this manually:
+```bash
+python manage.py shell
+```
+Then in the shell:
+```python
+from news.models import CustomUser
+for user in CustomUser.objects.all():
+    user.save()  # This will trigger group assignment
+```
+
+**Verify Permissions:**
+To check if a user has the correct permissions:
+```bash
+python manage.py shell
+```
+Then:
+```python
+from news.models import CustomUser
+user = CustomUser.objects.get(username='your_username')
+print(f"Groups: {list(user.groups.all())}")
+print(f"Permissions: {list(user.get_all_permissions())}")
+```
+
+Expected permissions for journalists:
+- `news.add_article`
+- `news.change_article`
+- `news.delete_article`
+- `news.view_article`
+- `news.add_newsletter`
+- `news.change_newsletter`
+- `news.delete_newsletter`
+- `news.view_newsletter`

@@ -24,3 +24,13 @@ class NewsConfig(AppConfig):
     """
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'news'
+    
+    def ready(self):
+        """Import signals when the app is ready.
+        
+        This method is called by Django when the application is ready.
+        It imports the signals module to ensure all signal handlers are
+        registered, including the post_migrate signal that creates default
+        groups and permissions.
+        """
+        import news.signals  # noqa: F401

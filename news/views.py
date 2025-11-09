@@ -68,31 +68,46 @@ def dashboard(request):
     }
     
     try:
-        # Different content based on role with error handling
+        # Different content based on role with error handling and optimized queries
         if user.role == 'READER':
             context['message'] = 'Welcome Reader! Browse our latest news.'
-            context['articles'] = Article.objects.filter(is_approved=True).select_related('journalist', 'publisher')
+            # Optimize with select_related to reduce database queries
+            context['articles'] = Article.objects.filter(
+                is_approved=True
+            ).select_related('journalist', 'publisher').order_by('-created_at')
+            # Only fetch newsletters from subscribed journalists
             context['newsletters'] = Newsletter.objects.filter(
                 journalist__in=user.subscribed_journalists.all()
-            ).select_related('journalist')[:5]
+            ).select_related('journalist').order_by('-created_at')[:5]
         elif user.role == 'JOURNALIST':
             context['message'] = 'Welcome Journalist! Create and manage your articles and newsletters.'
-            context['articles'] = Article.objects.filter(journalist=user).select_related('publisher')
-            context['newsletters'] = Newsletter.objects.filter(journalist=user)[:5]
+            # Optimize with select_related for publisher
+            context['articles'] = Article.objects.filter(
+                journalist=user
+            ).select_related('publisher').order_by('-created_at')
+            context['newsletters'] = Newsletter.objects.filter(
+                journalist=user
+            ).order_by('-created_at')[:5]
         elif user.role == 'EDITOR':
             context['message'] = 'Welcome Editor! Review and approve articles.'
-            context['pending_articles'] = Article.objects.filter(is_approved=False).select_related('journalist', 'publisher')
-            context['newsletters'] = Newsletter.objects.all().select_related('journalist')[:5]
+            # Show pending articles with related journalist and publisher data
+            context['pending_articles'] = Article.objects.filter(
+                is_approved=False
+            ).select_related('journalist', 'publisher').order_by('-created_at')
+            context['newsletters'] = Newsletter.objects.all().select_related(
+                'journalist'
+            ).order_by('-created_at')[:5]
         else:
             messages.warning(request, 'Your account has no role assigned. Please contact support.')
             context['message'] = 'Account configuration needed'
-    except Article.DoesNotExist:
-        messages.error(request, 'Error retrieving articles. Please try again later.')
-        context['articles'] = []
+            context['articles'] = []
     except Exception as e:
         messages.error(request, 'Error loading dashboard content. Please try again later.')
-        context['error'] = str(e)
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Dashboard error for user {user.username}: {str(e)}")
         context['articles'] = []
+        context['newsletters'] = []
     
     return render(request, 'news/dashboard.html', context)
 

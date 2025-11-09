@@ -12,10 +12,20 @@ from .models import CustomUser, Article, Publisher, Newsletter
 
 
 class CustomUserCreationForm(UserCreationForm):
-    """A lightweight user creation form that asks for role and email.
+    """User registration form with role-based access control.
     
-    Allows users to register as Reader, Journalist, or Editor.
-    Each role has different permissions and access levels.
+    This form extends Django's UserCreationForm to include role selection
+    and email validation. Users can register as:
+    - Reader: Can view approved articles and subscribe to journalists
+    - Journalist: Can create articles and newsletters
+    - Editor: Can approve/reject articles and manage content
+    
+    The form automatically assigns users to the appropriate permission group
+    based on their selected role when saved.
+    
+    Attributes:
+        role: ChoiceField for selecting user role (default: READER)
+        email: EmailField for user's email address (required)
     """
     ROLE_CHOICES = [
         ('READER', 'Reader'),
@@ -23,19 +33,37 @@ class CustomUserCreationForm(UserCreationForm):
         ('EDITOR', 'Editor'),
     ]
 
-    role = forms.ChoiceField(choices=ROLE_CHOICES, initial='READER')
-    email = forms.EmailField(required=True)
+    role = forms.ChoiceField(
+        choices=ROLE_CHOICES,
+        initial='READER',
+        help_text='Select your role in the news application'
+    )
+    email = forms.EmailField(
+        required=True,
+        help_text='Enter a valid email address for notifications'
+    )
 
     class Meta:
         model = CustomUser
         fields = ('username', 'email', 'password1', 'password2', 'role')
 
     def save(self, commit=True):
+        """Save the user with role and email.
+        
+        The user's role determines which permission group they are assigned to.
+        Group assignment happens automatically in the CustomUser.save() method.
+        
+        Args:
+            commit: If True, save the user to the database
+            
+        Returns:
+            CustomUser: The created user instance
+        """
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         user.role = self.cleaned_data['role']
         if commit:
-            user.save()
+            user.save()  # This triggers group assignment in CustomUser.save()
         return user
 
 

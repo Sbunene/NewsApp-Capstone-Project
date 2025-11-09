@@ -8,6 +8,7 @@ To use signals instead of view-based logic, import this module in news/apps.py.
 """
 
 from django.db.models.signals import post_save
+from django.db.models.signals import post_migrate
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
@@ -120,3 +121,71 @@ NewsApp Team
             pass
 
 
+@receiver(post_migrate)
+def create_default_groups(sender, **kwargs):
+    """Create default groups and permissions after migrations.
+    
+    This signal ensures that Reader, Journalist, and Editor groups exist
+    with proper permissions after migrations run. This prevents 403 errors
+    when users try to access protected views.
+    
+    Args:
+        sender: The app config that was migrated
+        **kwargs: Additional signal arguments
+    """
+    # Only run for the news app
+    if sender.name != 'news':
+        return
+    
+    from django.contrib.auth.models import Group, Permission
+    from django.contrib.contenttypes.models import ContentType
+    
+    try:
+        # Get content types for our models
+        article_ct = ContentType.objects.get_for_model(Article)
+        newsletter_ct = ContentType.objects.get_for_model(CustomUser.__bases__[0].__subclasses__()[0] if hasattr(CustomUser, '__bases__') else Article)
+        
+        # Try to get Newsletter model
+        from .models import Newsletter
+        newsletter_ct = ContentType.objects.get_for_model(Newsletter)
+        
+        # Create Reader Group
+        reader_group, created = Group.objects.get_or_create(name='Reader')
+        reader_permissions = [
+            Permission.objects.get(codename='view_article', content_type=article_ct),
+            Permission.objects.get(codename='view_newsletter', content_type=newsletter_ct),
+        ]
+        reader_group.permissions.set(reader_permissions)
+        
+        # Create Journalist Group
+        journalist_group, created = Group.objects.get_or_create(name='Journalist')
+        journalist_permissions = [
+            Permission.objects.get(codename='add_article', content_type=article_ct),
+            Permission.objects.get(codename='change_article', content_type=article_ct),
+            Permission.objects.get(codename='delete_article', content_type=article_ct),
+            Permission.objects.get(codename='view_article', content_type=article_ct),
+            Permission.objects.get(codename='add_newsletter', content_type=newsletter_ct),
+            Permission.objects.get(codename='change_newsletter', content_type=newsletter_ct),
+            Permission.objects.get(codename='delete_newsletter', content_type=newsletter_ct),
+            Permission.objects.get(codename='view_newsletter', content_type=newsletter_ct),
+        ]
+        journalist_group.permissions.set(journalist_permissions)
+        
+        # Create Editor Group
+        editor_group, created = Group.objects.get_or_create(name='Editor')
+        editor_permissions = [
+            Permission.objects.get(codename='change_article', content_type=article_ct),
+            Permission.objects.get(codename='delete_article', content_type=article_ct),
+            Permission.objects.get(codename='view_article', content_type=article_ct),
+            Permission.objects.get(codename='change_newsletter', content_type=newsletter_ct),
+            Permission.objects.get(codename='delete_newsletter', content_type=newsletter_ct),
+            Permission.objects.get(codename='view_newsletter', content_type=newsletter_ct),
+        ]
+        editor_group.permissions.set(editor_permissions)
+        
+    except Exception as e:
+        # If this fails, it's likely during initial migrations
+        # The create_groups management command can be run manually
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Could not create default groups: {e}")

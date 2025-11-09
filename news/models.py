@@ -83,16 +83,126 @@ class CustomUser(AbstractUser):
         # Remove from all groups first
         self.groups.clear()
         
-        # Add to appropriate group
-        if self.role == 'READER':
-            group, created = Group.objects.get_or_create(name='Reader')
-            self.groups.add(group)
-        elif self.role == 'JOURNALIST':
-            group, created = Group.objects.get_or_create(name='Journalist') 
-            self.groups.add(group)
-        elif self.role == 'EDITOR':
-            group, created = Group.objects.get_or_create(name='Editor')
-            self.groups.add(group)
+        # Add to appropriate group and ensure it has permissions
+        try:
+            if self.role == 'READER':
+                group, created = Group.objects.get_or_create(name='Reader')
+                if created or group.permissions.count() == 0:
+                    self._setup_reader_permissions(group)
+                self.groups.add(group)
+            elif self.role == 'JOURNALIST':
+                group, created = Group.objects.get_or_create(name='Journalist') 
+                if created or group.permissions.count() == 0:
+                    self._setup_journalist_permissions(group)
+                self.groups.add(group)
+            elif self.role == 'EDITOR':
+                group, created = Group.objects.get_or_create(name='Editor')
+                if created or group.permissions.count() == 0:
+                    self._setup_editor_permissions(group)
+                self.groups.add(group)
+        except Exception as e:
+            # If permission setup fails (e.g., during migrations), just add to group
+            # Permissions can be set up later via management command
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Could not set up permissions for {self.role}: {e}")
+            if self.role == 'READER':
+                group, _ = Group.objects.get_or_create(name='Reader')
+                self.groups.add(group)
+            elif self.role == 'JOURNALIST':
+                group, _ = Group.objects.get_or_create(name='Journalist')
+                self.groups.add(group)
+            elif self.role == 'EDITOR':
+                group, _ = Group.objects.get_or_create(name='Editor')
+                self.groups.add(group)
+
+    @staticmethod
+    def _setup_reader_permissions(group):
+        """Set up permissions for the Reader group.
+        
+        Args:
+            group: The Reader group to configure
+            
+        Raises:
+            Exception: If models or permissions don't exist (e.g., during migrations)
+        """
+        from django.contrib.auth.models import Permission
+        from django.contrib.contenttypes.models import ContentType
+        
+        try:
+            article_ct = ContentType.objects.get_for_model(Article)
+            newsletter_ct = ContentType.objects.get_for_model(Newsletter)
+            
+            permissions = [
+                Permission.objects.get(codename='view_article', content_type=article_ct),
+                Permission.objects.get(codename='view_newsletter', content_type=newsletter_ct),
+            ]
+            group.permissions.set(permissions)
+        except Exception:
+            # Re-raise to be caught by save() method
+            raise
+    
+    @staticmethod
+    def _setup_journalist_permissions(group):
+        """Set up permissions for the Journalist group.
+        
+        Args:
+            group: The Journalist group to configure
+            
+        Raises:
+            Exception: If models or permissions don't exist (e.g., during migrations)
+        """
+        from django.contrib.auth.models import Permission
+        from django.contrib.contenttypes.models import ContentType
+        
+        try:
+            article_ct = ContentType.objects.get_for_model(Article)
+            newsletter_ct = ContentType.objects.get_for_model(Newsletter)
+            
+            permissions = [
+                Permission.objects.get(codename='add_article', content_type=article_ct),
+                Permission.objects.get(codename='change_article', content_type=article_ct),
+                Permission.objects.get(codename='delete_article', content_type=article_ct),
+                Permission.objects.get(codename='view_article', content_type=article_ct),
+                Permission.objects.get(codename='add_newsletter', content_type=newsletter_ct),
+                Permission.objects.get(codename='change_newsletter', content_type=newsletter_ct),
+                Permission.objects.get(codename='delete_newsletter', content_type=newsletter_ct),
+                Permission.objects.get(codename='view_newsletter', content_type=newsletter_ct),
+            ]
+            group.permissions.set(permissions)
+        except Exception:
+            # Re-raise to be caught by save() method
+            raise
+    
+    @staticmethod
+    def _setup_editor_permissions(group):
+        """Set up permissions for the Editor group.
+        
+        Args:
+            group: The Editor group to configure
+            
+        Raises:
+            Exception: If models or permissions don't exist (e.g., during migrations)
+        """
+        from django.contrib.auth.models import Permission
+        from django.contrib.contenttypes.models import ContentType
+        
+        try:
+            article_ct = ContentType.objects.get_for_model(Article)
+            newsletter_ct = ContentType.objects.get_for_model(Newsletter)
+            
+            permissions = [
+                Permission.objects.get(codename='change_article', content_type=article_ct),
+                Permission.objects.get(codename='delete_article', content_type=article_ct),
+                Permission.objects.get(codename='view_article', content_type=article_ct),
+                Permission.objects.get(codename='change_newsletter', content_type=newsletter_ct),
+                Permission.objects.get(codename='delete_newsletter', content_type=newsletter_ct),
+                Permission.objects.get(codename='view_newsletter', content_type=newsletter_ct),
+            ]
+            group.permissions.set(permissions)
+        except Exception:
+            # Re-raise to be caught by save() method
+            raise
 
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
