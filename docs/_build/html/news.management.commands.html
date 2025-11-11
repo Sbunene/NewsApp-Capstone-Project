@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>news.management.commands package &#8212; NewsApp 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=27fed22d" />
+    <script src="_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="news-management-commands-package">
+<h1>news.management.commands package<a class="headerlink" href="#news-management-commands-package" title="Link to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+</section>
+<section id="module-news.management.commands.create_groups">
+<span id="news-management-commands-create-groups-module"></span><h2>news.management.commands.create_groups module<a class="headerlink" href="#module-news.management.commands.create_groups" title="Link to this heading">¶</a></h2>
+<p>Django management command to create user groups and assign permissions.</p>
+<p>This command sets up the three core user groups (Reader, Journalist, Editor)
+with appropriate permissions based on their roles. Run this command after
+initial migrations to establish the role-based access control system.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="news.management.commands.create_groups.Command">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">news.management.commands.create_groups.</span></span><span class="sig-name descname"><span class="pre">Command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/news/management/commands/create_groups.html#Command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#news.management.commands.create_groups.Command" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCommand</span></code></p>
+<p>Management command to create default user groups with permissions.</p>
+<dl class="simple">
+<dt>Creates three user groups and assigns appropriate permissions:</dt><dd><ul class="simple">
+<li><p>Reader: Can view articles and newsletters</p></li>
+<li><p>Journalist: Can create, edit, delete, and view their own content</p></li>
+<li><p>Editor: Can approve, edit, delete, and view all content</p></li>
+</ul>
+</dd>
+<dt>Usage:</dt><dd><p>python manage.py create_groups</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>django.contrib.auth.models.Permission.DoesNotExist</strong> – If required
+    permissions are not found (should not occur after migrations).</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="news.management.commands.create_groups.Command.handle">
+<span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/news/management/commands/create_groups.html#Command.handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#news.management.commands.create_groups.Command.handle" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the command to create groups and assign permissions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – Unused positional arguments</p></li>
+<li><p><strong>**options</strong> – Unused keyword arguments from command line</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None. Outputs success messages to stdout.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><p>Creates or updates Reader, Journalist, and Editor groups in database.
+Assigns permissions to each group based on their role requirements.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="news.management.commands.create_groups.Command.help">
+<span class="sig-name descname"><span class="pre">help</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Creates</span> <span class="pre">default</span> <span class="pre">groups</span> <span class="pre">(Reader,</span> <span class="pre">Journalist,</span> <span class="pre">Editor)</span> <span class="pre">and</span> <span class="pre">assigns</span> <span class="pre">permissions'</span></em><a class="headerlink" href="#news.management.commands.create_groups.Command.help" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-news.management.commands.create_sample_data">
+<span id="news-management-commands-create-sample-data-module"></span><h2>news.management.commands.create_sample_data module<a class="headerlink" href="#module-news.management.commands.create_sample_data" title="Link to this heading">¶</a></h2>
+<p>Django management command to create sample data for testing.</p>
+<p>This command populates the database with sample publishers, users (journalists
+and editors), and articles (both approved and pending) for development and
+testing purposes. Useful for demonstrating application functionality without
+manual data entry.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="news.management.commands.create_sample_data.Command">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">news.management.commands.create_sample_data.</span></span><span class="sig-name descname"><span class="pre">Command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/news/management/commands/create_sample_data.html#Command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#news.management.commands.create_sample_data.Command" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BaseCommand</span></code></p>
+<p>Management command to create sample data for development and testing.</p>
+<p>Creates sample publishers, test users, and articles to populate the database
+with realistic data. This allows developers to test the application without
+manually creating test data through the UI.</p>
+<dl class="simple">
+<dt>Creates:</dt><dd><ul class="simple">
+<li><p>3 publishers (Tech News Network, Sports Daily, Politics Today)</p></li>
+<li><p>2 journalists (tech_journalist, sports_journalist)</p></li>
+<li><p>1 editor (sample_editor)</p></li>
+<li><p>5 approved articles</p></li>
+<li><p>2 pending articles</p></li>
+</ul>
+</dd>
+<dt>Usage:</dt><dd><p>python manage.py create_sample_data</p>
+</dd>
+<dt>Login Credentials Created:</dt><dd><ul class="simple">
+<li><p>tech_journalist / test123</p></li>
+<li><p>sports_journalist / test123</p></li>
+<li><p>sample_editor / test123</p></li>
+<li><p>admin / admin123 (if created separately)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="news.management.commands.create_sample_data.Command.handle">
+<span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/news/management/commands/create_sample_data.html#Command.handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#news.management.commands.create_sample_data.Command.handle" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the command to create sample data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>*args</strong> – Unused positional arguments</p></li>
+<li><p><strong>**options</strong> – Unused keyword arguments from command line</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None. Outputs success messages to stdout.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Side Effects:</dt><dd><p>Creates publishers, users, and articles in the database.
+Skips creation if entities with same identifiers already exist.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="news.management.commands.create_sample_data.Command.help">
+<span class="sig-name descname"><span class="pre">help</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Creates</span> <span class="pre">sample</span> <span class="pre">data</span> <span class="pre">(publishers,</span> <span class="pre">users,</span> <span class="pre">articles)</span> <span class="pre">for</span> <span class="pre">testing'</span></em><a class="headerlink" href="#news.management.commands.create_sample_data.Command.help" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-news.management.commands">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-news.management.commands" title="Link to this heading">¶</a></h2>
+<p>Django management commands for the news application.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">NewsApp</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Sbunene.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+      |
+      <a href="_sources/news.management.commands.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

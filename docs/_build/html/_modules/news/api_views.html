@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>news.api_views &#8212; NewsApp 1.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=5ecbeea2" />
+    <link rel="stylesheet" type="text/css" href="../../_static/basic.css?v=b08954a9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=27fed22d" />
+    <script src="../../_static/documentation_options.js?v=f2a433a1"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for news.api_views</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;API views for the News application.</span>
+
+<span class="sd">Small DRF views that expose approved articles and users. Views use</span>
+<span class="sd">simple page-number pagination suitable for demos and tests. All views require</span>
+<span class="sd">authentication and return data in JSON format.</span>
+
+<span class="sd">API Endpoints:</span>
+<span class="sd">    /api/articles/ - List approved articles with pagination</span>
+<span class="sd">    /api/articles/&lt;pk&gt;/ - Retrieve single approved article</span>
+<span class="sd">    /api/users/ - List all users with pagination</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework</span><span class="w"> </span><span class="kn">import</span> <span class="n">generics</span><span class="p">,</span> <span class="n">permissions</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">rest_framework.pagination</span><span class="w"> </span><span class="kn">import</span> <span class="n">PageNumberPagination</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">Article</span><span class="p">,</span> <span class="n">CustomUser</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.serializers</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArticleSerializer</span><span class="p">,</span> <span class="n">UserSerializer</span>
+
+
+<div class="viewcode-block" id="StandardPagination">
+<a class="viewcode-back" href="../../news.html#news.api_views.StandardPagination">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">StandardPagination</span><span class="p">(</span><span class="n">PageNumberPagination</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configure standard pagination settings for API views.</span>
+<span class="sd">    </span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        page_size: Number of items per page (default 10)</span>
+<span class="sd">        page_size_query_param: Allow client to override page size</span>
+<span class="sd">        max_page_size: Maximum allowed page size</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">page_size</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">page_size_query_param</span> <span class="o">=</span> <span class="s1">&#39;page_size&#39;</span>
+    <span class="n">max_page_size</span> <span class="o">=</span> <span class="mi">100</span></div>
+
+
+
+<div class="viewcode-block" id="ArticleListAPIView">
+<a class="viewcode-back" href="../../news.html#news.api_views.ArticleListAPIView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ArticleListAPIView</span><span class="p">(</span><span class="n">generics</span><span class="o">.</span><span class="n">ListAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;API endpoint that lists all approved articles.</span>
+<span class="sd">    </span>
+<span class="sd">    Lists articles that have been approved by editors, with pagination.</span>
+<span class="sd">    Requires authentication. Articles include nested journalist and </span>
+<span class="sd">    publisher information through serializer relationships.</span>
+<span class="sd">    </span>
+<span class="sd">    GET Parameters:</span>
+<span class="sd">        page: Page number (default 1)</span>
+<span class="sd">        page_size: Number of articles per page (default 10, max 100)</span>
+<span class="sd">    </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Paginated list of approved articles in JSON format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">ArticleSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">permissions</span><span class="o">.</span><span class="n">IsAuthenticated</span><span class="p">]</span>
+    <span class="n">pagination_class</span> <span class="o">=</span> <span class="n">StandardPagination</span>
+
+<div class="viewcode-block" id="ArticleListAPIView.get_queryset">
+<a class="viewcode-back" href="../../news.html#news.api_views.ArticleListAPIView.get_queryset">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_approved</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ArticleDetailAPIView">
+<a class="viewcode-back" href="../../news.html#news.api_views.ArticleDetailAPIView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ArticleDetailAPIView</span><span class="p">(</span><span class="n">generics</span><span class="o">.</span><span class="n">RetrieveAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;API endpoint that returns a single approved article.</span>
+<span class="sd">    </span>
+<span class="sd">    Retrieves a specific approved article by ID. Returns 404 if the article</span>
+<span class="sd">    doesn&#39;t exist or hasn&#39;t been approved yet. Requires authentication.</span>
+<span class="sd">    </span>
+<span class="sd">    URL Parameters:</span>
+<span class="sd">        pk: Primary key (ID) of the article to retrieve</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Single article object with nested journalist/publisher data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">ArticleSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">permissions</span><span class="o">.</span><span class="n">IsAuthenticated</span><span class="p">]</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Article</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">is_approved</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="UserListAPIView">
+<a class="viewcode-back" href="../../news.html#news.api_views.UserListAPIView">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">UserListAPIView</span><span class="p">(</span><span class="n">generics</span><span class="o">.</span><span class="n">ListAPIView</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;API endpoint that lists all users (paginated).</span>
+<span class="sd">    </span>
+<span class="sd">    Lists all users in the system with pagination. Requires authentication.</span>
+<span class="sd">    User objects include basic profile information and role.</span>
+<span class="sd">    </span>
+<span class="sd">    GET Parameters:</span>
+<span class="sd">        page: Page number (default 1)</span>
+<span class="sd">        page_size: Number of users per page (default 10, max 100)</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Paginated list of users in JSON format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">UserSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">[</span><span class="n">permissions</span><span class="o">.</span><span class="n">IsAuthenticated</span><span class="p">]</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">CustomUser</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">pagination_class</span> <span class="o">=</span> <span class="n">StandardPagination</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">NewsApp</a></h1>
+
+
+
+
+
+
+
+
+
+<search id="searchbox" style="display: none" role="search">
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Search"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2025, Sbunene.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 8.2.3</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 1.0.0</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
