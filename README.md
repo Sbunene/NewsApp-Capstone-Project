@@ -9,6 +9,7 @@ A Django-based news application that allows readers to view articles published b
 - Python 3.8 or higher
 - MariaDB 10.5+ or MySQL 8.0+
 - pip (Python package manager)
+- **For Docker:** Docker installed on your system
 
 ## Setup Instructions
 
@@ -80,7 +81,26 @@ pip install -r requirements.txt
 - Install Microsoft C++ Build Tools from: https://visualstudio.microsoft.com/visual-cpp-build-tools/
 - Or use a pre-built wheel: `pip install mysqlclient‑2.2.7‑cp312‑cp312‑win_amd64.whl`
 
-### 4. Configure Environment Variables
+### Option 4: Using Docker (Quick Setup)
+
+#### Running with Docker
+
+1. **Build the Docker image:**
+   ```bash
+   docker build -t newsapp .
+
+### Docker Setup
+
+#### Prerequisites
+- Docker installed on your system
+
+#### Running with Docker
+
+1. **Build the Docker image:**
+   ```bash
+   docker build -t newsapp .
+
+### 5. Configure Environment Variables
 
 Create a `.env` file in the project root (or use the one created by `setup_database.py`):
 ```env
@@ -108,7 +128,7 @@ DATABASES = {
 }
 ```
 
-### 5. Database Migration
+### 6. Database Migration
 
 ```bash
 # Create database tables
@@ -116,7 +136,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 6. Create Initial Groups and Test Data
+### 7. Create Initial Groups and Test Data
 
 ```bash
 # Create user groups (Reader, Journalist, Editor)
@@ -129,7 +149,7 @@ python manage.py create_sample_data
 python manage.py createsuperuser
 ```
 
-### 7. Run Development Server
+### 8. Run Development Server
 
 ```bash
 python manage.py runserver
