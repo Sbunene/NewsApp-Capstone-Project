@@ -1,0 +1,13 @@
+.git
+.gitignore
+README.md
+db.sqlite3
+get-docker.sh
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+env/
+venv/
