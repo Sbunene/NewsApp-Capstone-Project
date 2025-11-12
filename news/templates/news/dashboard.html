@@ -28,6 +28,7 @@
         {% elif user.role == 'EDITOR' %}
             <div class="action-buttons">
                 <a href="{% url 'newsletter_list' %}" class="btn" style="background: #16a085;">View All Newsletters</a>
+                <a href="{% url 'create_publisher' %}" class="btn" style="background: #2c3e50;">Create Publishing House</a>
             </div>
         {% endif %}
     </div>
