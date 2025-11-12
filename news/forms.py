@@ -124,3 +124,18 @@ class NewsletterForm(forms.ModelForm):
         if commit:
             newsletter.save()
         return newsletter
+
+
+class PublisherForm(forms.ModelForm):
+    """Form to create or edit a Publisher (publishing house).
+
+    Editors should be able to create publishers. When created the view
+    may add the current editor as one of the publisher's editors.
+    """
+
+    class Meta:
+        model = Publisher
+        fields = ('name',)
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Enter publishing house name...'}),
+        }
