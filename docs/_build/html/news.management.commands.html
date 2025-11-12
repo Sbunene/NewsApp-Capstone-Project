@@ -14,6 +14,8 @@
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="news.migrations package" href="news.migrations.html" />
+    <link rel="prev" title="news.management package" href="news.management.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -63,6 +65,11 @@ initial migrations to establish the role-based access control system.</p>
     permissions are not found (should not occur after migrations).</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="news.management.commands.create_groups.Command.help">
+<span class="sig-name descname"><span class="pre">help</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Creates</span> <span class="pre">default</span> <span class="pre">groups</span> <span class="pre">(Reader,</span> <span class="pre">Journalist,</span> <span class="pre">Editor)</span> <span class="pre">and</span> <span class="pre">assigns</span> <span class="pre">permissions'</span></em><a class="headerlink" href="#news.management.commands.create_groups.Command.help" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="news.management.commands.create_groups.Command.handle">
 <span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/news/management/commands/create_groups.html#Command.handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#news.management.commands.create_groups.Command.handle" title="Link to this definition">¶</a></dt>
@@ -84,11 +91,6 @@ Assigns permissions to each group based on their role requirements.</p>
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="news.management.commands.create_groups.Command.help">
-<span class="sig-name descname"><span class="pre">help</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Creates</span> <span class="pre">default</span> <span class="pre">groups</span> <span class="pre">(Reader,</span> <span class="pre">Journalist,</span> <span class="pre">Editor)</span> <span class="pre">and</span> <span class="pre">assigns</span> <span class="pre">permissions'</span></em><a class="headerlink" href="#news.management.commands.create_groups.Command.help" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -127,6 +129,11 @@ manually creating test data through the UI.</p>
 </ul>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="news.management.commands.create_sample_data.Command.help">
+<span class="sig-name descname"><span class="pre">help</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Creates</span> <span class="pre">sample</span> <span class="pre">data</span> <span class="pre">(publishers,</span> <span class="pre">users,</span> <span class="pre">articles)</span> <span class="pre">for</span> <span class="pre">testing'</span></em><a class="headerlink" href="#news.management.commands.create_sample_data.Command.help" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="news.management.commands.create_sample_data.Command.handle">
 <span class="sig-name descname"><span class="pre">handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/news/management/commands/create_sample_data.html#Command.handle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#news.management.commands.create_sample_data.Command.handle" title="Link to this definition">¶</a></dt>
@@ -148,11 +155,6 @@ Skips creation if entities with same identifiers already exist.</p>
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="news.management.commands.create_sample_data.Command.help">
-<span class="sig-name descname"><span class="pre">help</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'Creates</span> <span class="pre">sample</span> <span class="pre">data</span> <span class="pre">(publishers,</span> <span class="pre">users,</span> <span class="pre">articles)</span> <span class="pre">for</span> <span class="pre">testing'</span></em><a class="headerlink" href="#news.management.commands.create_sample_data.Command.help" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -189,11 +191,26 @@ Skips creation if entities with same identifiers already exist.</p>
     </div>
 </search>
 <script>document.getElementById('searchbox').style.display = "block"</script><h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">news</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="news.html">news package</a></li>
+</ul>
+</li>
+</ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">news</a><ul>
+  <li><a href="news.html">news package</a><ul>
+  <li><a href="news.management.html">news.management package</a><ul>
+      <li>Previous: <a href="news.management.html" title="previous chapter">news.management package</a></li>
+      <li>Next: <a href="news.migrations.html" title="next chapter">news.migrations package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
   </ul></li>
 </ul>
 </div>

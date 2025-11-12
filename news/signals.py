@@ -22,8 +22,9 @@ def notify_subscribers_on_approval(sender, instance, created, **kwargs):
     
     This function is triggered automatically when an Article is saved. If the article
     is being approved (is_approved changed from False to True), it will:
-        1. Send email notifications to all subscribers
-        2. Post the article to X/Twitter (if credentials are configured)
+
+    - Send email notifications to all subscribers
+    - Post the article to X/Twitter (if credentials are configured)
     
     Args:
         sender: The Article model class

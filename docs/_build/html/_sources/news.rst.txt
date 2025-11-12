@@ -96,7 +96,3 @@ news.views module
 Module contents
 ---------------
 
-.. automodule:: news
-   :members:
-   :show-inheritance:
-   :undoc-members:
