@@ -178,16 +178,8 @@ def approve_article(request, article_id):
             messages.error(request, 'Only editors can approve articles.')
             return redirect('dashboard')
 
-        # Editors may only approve articles for publishers they belong to.
-        # If the article has no publisher only superusers may approve it.
-        if article.publisher is not None:
-            if request.user not in article.publisher.editors.all():
-                messages.error(request, 'You are not an editor for this publishing house.')
-                return redirect('dashboard')
-        else:
-            if not request.user.is_superuser:
-                messages.error(request, 'Only site administrators can approve articles without a publishing house.')
-                return redirect('dashboard')
+        # Editors can approve pending articles. We keep this broad so that
+        # editors can manage pending content across publishers within the app.
             
         if article.is_approved:
             messages.info(request, f'Article "{article.title}" was already approved.')
@@ -300,16 +292,7 @@ def pending_articles(request):
         if request.user.role != 'EDITOR':
             messages.error(request, 'Access denied. Only editors can view pending articles.')
             return redirect('dashboard')
-        # Editors should only see pending articles for publishers they manage
-        publishers = request.user.publisher_editors.all()
-        if not publishers.exists():
-            messages.info(request, 'You are not assigned to any publishing house yet.')
-            pending_articles = Article.objects.none()
-        else:
-            pending_articles = Article.objects.filter(
-                is_approved=False,
-                publisher__in=publishers
-            ).select_related('journalist', 'publisher')
+        pending_articles = Article.objects.filter(is_approved=False).select_related('journalist', 'publisher')
         
         return render(
             request,
@@ -348,17 +331,7 @@ def edit_article(request, article_id):
             messages.error(request, 'You can only edit your own articles.')
             return redirect('dashboard')
 
-        # Editors can edit articles only when they are editors for the article's publisher.
-        if request.user.role == 'EDITOR':
-            if article.publisher is None:
-                # only superusers allowed to edit unassigned articles
-                if not request.user.is_superuser:
-                    messages.error(request, 'Only site administrators can edit articles without a publishing house.')
-                    return redirect('dashboard')
-            else:
-                if request.user not in article.publisher.editors.all():
-                    messages.error(request, 'You are not an editor for this publishing house.')
-                    return redirect('dashboard')
+        # Editors can edit any article; journalists are restricted to their own articles.
         
         if request.method == 'POST':
             form = ArticleForm(request.POST, instance=article, request=request)
@@ -411,16 +384,7 @@ def delete_article(request, article_id):
             messages.error(request, 'You can only delete your own articles.')
             return redirect('dashboard')
 
-        # Editors can delete articles only when they are editors for the article's publisher.
-        if request.user.role == 'EDITOR':
-            if article.publisher is None:
-                if not request.user.is_superuser:
-                    messages.error(request, 'Only site administrators can delete articles without a publishing house.')
-                    return redirect('dashboard')
-            else:
-                if request.user not in article.publisher.editors.all():
-                    messages.error(request, 'You are not an editor for this publishing house.')
-                    return redirect('dashboard')
+        # Editors can delete any article; journalists are restricted to their own articles.
         
         if request.method == 'POST':
             article_title = article.title
