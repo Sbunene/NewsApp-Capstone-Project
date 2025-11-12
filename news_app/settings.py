@@ -79,27 +79,39 @@ TEMPLATES = [
 WSGI_APPLICATION = 'news_app.wsgi.application'
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-# Using MariaDB/MySQL as required by the project specifications
-# Configuration is loaded from environment variables for security
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',  # MariaDB uses the MySQL backend
-        'NAME': os.getenv('MYSQL_DATABASE', 'newsapp'),
-        'USER': os.getenv('MYSQL_USER', 'newsapp_user'),
-        'PASSWORD': os.getenv('MYSQL_PASSWORD', ''),  # Load from .env file
-        'HOST': os.getenv('MYSQL_HOST', 'localhost'),
-        'PORT': os.getenv('MYSQL_PORT', '3306'),
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
-        'TEST': {
-            'CHARSET': 'utf8mb4',
-            'COLLATION': 'utf8mb4_unicode_ci',
+# Environment-aware configuration: prefer MariaDB/MySQL when explicit DB
+# environment variables are provided, otherwise fall back to a file-backed
+# SQLite database which is safe for development and CI environments.
+DB_ENGINE = os.getenv('DB_ENGINE', '').strip()
+USE_CODESPACE_SQLITE = os.getenv('CODESPACE_ENV', '') == '1'
+
+if DB_ENGINE.lower() in ('mysql', 'django.db.backends.mysql') and not USE_CODESPACE_SQLITE:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('MYSQL_DATABASE', os.getenv('DB_NAME', 'newsapp')),
+            'USER': os.getenv('MYSQL_USER', os.getenv('DB_USER', 'newsapp_user')),
+            'PASSWORD': os.getenv('MYSQL_PASSWORD', os.getenv('DB_PASSWORD', '')),
+            'HOST': os.getenv('MYSQL_HOST', os.getenv('DB_HOST', 'localhost')),
+            'PORT': os.getenv('MYSQL_PORT', os.getenv('DB_PORT', '3306')),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+            'TEST': {
+                'CHARSET': 'utf8mb4',
+                'COLLATION': 'utf8mb4_unicode_ci',
+            }
         }
     }
-}
+else:
+    # File-backed SQLite by default (development / CI friendly)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
 
 # Password validation
