@@ -1,250 +1,85 @@
 # News Application
 
-A Django-based news application that allows readers to view articles published by journalists and approved by editors.
+A Django-based news application with role-based access control (Reader, Journalist, Editor) and publishing-house support.
 
-**Database:** This project uses **MariaDB/MySQL** (not SQLite) as required by the project specifications.
+This repository contains:
+- The Django app under `news/`.
+- Sphinx-generated documentation under `docs/_build/html/` (see the `docs` branch for the source and built output).
+- Docker support in the `container` branch and a `Dockerfile`/entrypoint in the root.
 
-## Prerequisites
+Quick start (recommended order)
+1. Prepare environment variables (`.env`)
+2. Install dependencies and run migrations
+3. Create groups and a superuser
+4. Run locally or via Docker
 
-- Python 3.8 or higher
-- MariaDB 10.5+ or MySQL 8.0+
-- pip (Python package manager)
-- **For Docker:** Docker installed on your system
+1) Environment (create `.env` at project root)
 
-## Setup Instructions
+Create a `.env` with your DB credentials. Example (do NOT commit real secrets):
 
-### 1. Install MariaDB
-
-**Windows:**
-```bash
-# Download and install MariaDB from: https://mariadb.org/download/
-# During installation, set a root password and note the port (default: 3306)
-```
-
-**Linux (Ubuntu/Debian):**
-```bash
-sudo apt update
-sudo apt install mariadb-server mariadb-client
-sudo systemctl start mariadb
-sudo mysql_secure_installation
-```
-
-**macOS:**
-```bash
-brew install mariadb
-brew services start mariadb
-mysql_secure_installation
-```
-
-### 2. Create Database and User
-
-**Option A: Using the automated setup script (Recommended)**
-```bash
-python setup_database.py
-```
-This script will guide you through creating the database, user, and `.env` file.
-
-**Option B: Manual setup**
-```bash
-# Login to MariaDB
-mysql -u root -p
-
-# Create database
-CREATE DATABASE newsapp CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-# Create user (replace 'your_password' with a strong password)
-CREATE USER 'newsapp_user'@'localhost' IDENTIFIED BY 'your_password';
-
-# Grant privileges
-GRANT ALL PRIVILEGES ON newsapp.* TO 'newsapp_user'@'localhost';
-FLUSH PRIVILEGES;
-
-# Exit
-EXIT;
-```
-
-### 3. Environment Setup
-
-```bash
-# Create and activate virtual environment
-python -m venv venv
-
-# Activate virtual environment
-venv\Scripts\activate  # Windows
-source venv/bin/activate  # Linux/Mac
-
-# Install dependencies (includes mysqlclient for MariaDB)
-pip install -r requirements.txt
-```
-
-**Note:** If you encounter issues installing `mysqlclient` on Windows, you may need to:
-- Install Microsoft C++ Build Tools from: https://visualstudio.microsoft.com/visual-cpp-build-tools/
-- Or use a pre-built wheel: `pip install mysqlclient‑2.2.7‑cp312‑cp312‑win_amd64.whl`
-
-### Option 4: Using Docker (Quick Setup)
-
-#### Running with Docker
-
-1. **Build the Docker image:**
-   ```bash
-   docker build -t newsapp .
-
-### Docker Setup
-
-#### Prerequisites
-- Docker installed on your system
-
-#### Running with Docker
-
-1. **Build the Docker image:**
-   ```bash
-   docker build -t newsapp .
-
-### 5. Configure Environment Variables
-
-Create a `.env` file in the project root (or use the one created by `setup_database.py`):
 ```env
-MYSQL_DATABASE=newsapp
-MYSQL_USER=newsapp_user
-MYSQL_PASSWORD=your_password
-MYSQL_HOST=localhost
-MYSQL_PORT=3306
+# For MariaDB/MySQL (optional)
+DB_ENGINE=django.db.backends.mysql
+DB_NAME=newsapp
+DB_USER=newsapp_user
+DB_PASSWORD=your_password
+DB_HOST=127.0.0.1
+DB_PORT=3306
 
-DJANGO_SECRET_KEY=django-insecure-o2a6)1kgvu165at&$e&g=#f@ura0obl4$oq_8*hs(!n1xs+uz)
+# Local/dev defaults
 DJANGO_DEBUG=True
+# If you want an in-memory DB for CI, set CODESPACE_ENV=1 (not recommended for iterative work)
+# CODESPACE_ENV=1
 ```
 
-**Important:** The database settings in `news_app/settings.py` are already configured for MariaDB:
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',  # Uses MariaDB/MySQL
-        'NAME': 'newsapp',
-        'USER': 'newsapp_user',
-        'PASSWORD': 'your_password',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
-```
-
-### 6. Database Migration
+2) Run locally (venv)
 
 ```bash
-# Create database tables
-python manage.py makemigrations
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 python manage.py migrate
-```
-
-### 7. Create Initial Groups and Test Data
-
-```bash
-# Create user groups (Reader, Journalist, Editor)
 python manage.py create_groups
-
-# Optional: Create sample data for testing
-python manage.py create_sample_data
-
-# Create a superuser account
 python manage.py createsuperuser
-```
-
-### 8. Run Development Server
-
-```bash
 python manage.py runserver
 ```
 
-Access the application at: http://127.0.0.1:8000/
-Admin panel: http://127.0.0.1:8000/admin/
+3) Docker (container branch)
 
-## User Accounts for Testing
+Build and run the image (the image runs migrations on start via entrypoint):
 
-- **Reader**: `admin` / `admin123` - Can view approved articles
-- **Journalist**: `tech_journalist` / `test123` - Can create and manage articles
-- **Editor**: `sample_editor` / `test123` - Can approve/reject articles
+```bash
+docker build -t newsapp .
+docker run -p 8000:8000 --env-file .env newsapp
+```
 
-## Project Structure
+4) Docs
 
-- `news/` - Main application directory
-  - `models.py` - Database models (CustomUser, Article, Publisher, Newsletter)
-  - `views.py` - View functions for handling requests
-  - `api_views.py` - REST API views
-  - `forms.py` - Forms for data input
-  - `tests.py` - Unit tests
-  - `urls.py` - URL routing
+Built documentation is available in `docs/_build/html/`. To rebuild locally:
 
-## Features
+```bash
+cd docs
+make html
+# Open docs/_build/html/index.html in a browser
+```
 
-- Role-based access control (Reader, Journalist, Editor)
-- Article creation and approval workflow
-- Email notifications for subscribers
-- REST API with authentication
-- Comprehensive test coverage
+5) Tests
 
-## API Endpoints
-
-- `/api/articles/` - List approved articles
-- `/api/articles/<pk>/` - Retrieve single article
-- `/api/users/` - List users
-
-## Testing
-
-Run the test suite:
 ```bash
 python manage.py test
 ```
 
-## Troubleshooting
+Notes & security
+- Do NOT commit real secrets (DB passwords, API tokens) into this repo. Use `.env` and add it to `.gitignore`.
+- If you find secrets committed already, rotate them and remove from history before sharing publicly.
 
-### 403 Forbidden Error When Creating Articles or Newsletters
+Support
+If you'd like, I can:
+- Clean up the README further and add step-by-step Docker/compose examples
+- Remove secrets from the history (requires force-push and coordination)
+- Create a minimal `docker-compose.yml` for local development
 
-If journalists are getting a 403 Forbidden error when trying to create articles or newsletters, this is likely due to missing group permissions. The application now automatically creates groups and assigns permissions after migrations.
-
-**Automatic Fix (Recommended):**
-The application now uses a post_migrate signal to automatically create groups and permissions. Simply run:
-```bash
-python manage.py migrate
-```
-This will automatically create the Reader, Journalist, and Editor groups with proper permissions.
-
-**Manual Fix (If Needed):**
-If you still experience issues, you can manually run the create_groups command:
-```bash
-python manage.py create_groups
-```
-
-**For Existing Users:**
-Existing users will automatically be assigned to the correct group when they log in or when their account is saved. You can also trigger this manually:
-```bash
-python manage.py shell
-```
-Then in the shell:
-```python
-from news.models import CustomUser
-for user in CustomUser.objects.all():
-    user.save()  # This will trigger group assignment
-```
-
-**Verify Permissions:**
-To check if a user has the correct permissions:
-```bash
-python manage.py shell
-```
-Then:
-```python
-from news.models import CustomUser
-user = CustomUser.objects.get(username='your_username')
-print(f"Groups: {list(user.groups.all())}")
-print(f"Permissions: {list(user.get_all_permissions())}")
-```
-
-Expected permissions for journalists:
-- `news.add_article`
-- `news.change_article`
-- `news.delete_article`
-- `news.view_article`
-- `news.add_newsletter`
+-- End of README
 - `news.change_newsletter`
 - `news.delete_newsletter`
 - `news.view_newsletter`
