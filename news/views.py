@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.http import JsonResponse
 from .models import CustomUser, Article, Publisher, Newsletter
-from .forms import ArticleForm, CustomUserCreationForm, NewsletterForm
+from .forms import ArticleForm, CustomUserCreationForm, NewsletterForm, PublisherForm
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db import models
@@ -152,6 +152,10 @@ def approve_article(request, article_id):
         if not request.user.role == 'EDITOR':
             messages.error(request, 'Only editors can approve articles.')
             return redirect('dashboard')
+
+        # Editors are allowed to approve articles. Additional publisher-scoped
+        # restrictions are intentionally not enforced here so that editors
+        # can manage pending content across publishers.
             
         if article.is_approved:
             messages.info(request, f'Article "{article.title}" was already approved.')
@@ -234,6 +238,9 @@ def reject_article(request, article_id):
         if not request.user.role == 'EDITOR':
             messages.error(request, 'Only editors can reject articles.')
             return redirect('dashboard')
+
+        # Editors may reject articles. No publisher-scoped restriction is
+        # applied here so editors can manage content across publishers.
         
         title = article.title
         article.delete()
@@ -264,7 +271,7 @@ def pending_articles(request):
         if request.user.role != 'EDITOR':
             messages.error(request, 'Access denied. Only editors can view pending articles.')
             return redirect('dashboard')
-        
+
         pending_articles = Article.objects.filter(is_approved=False).select_related(
             'journalist', 'publisher'
         )
@@ -305,6 +312,8 @@ def edit_article(request, article_id):
         if request.user.role == 'JOURNALIST' and article.journalist != request.user:
             messages.error(request, 'You can only edit your own articles.')
             return redirect('dashboard')
+
+        # Editors can edit articles; journalists are restricted to their own articles.
         
         if request.method == 'POST':
             form = ArticleForm(request.POST, instance=article, request=request)
@@ -356,6 +365,8 @@ def delete_article(request, article_id):
         if request.user.role == 'JOURNALIST' and article.journalist != request.user:
             messages.error(request, 'You can only delete your own articles.')
             return redirect('dashboard')
+
+        # Editors can delete articles; journalists are restricted to their own articles.
         
         if request.method == 'POST':
             article_title = article.title
@@ -522,6 +533,34 @@ def create_newsletter(request):
         form = NewsletterForm(request=request)
     
     return render(request, 'news/create_newsletter.html', {'form': form})
+
+
+@login_required
+def create_publisher(request):
+    """Create a new Publisher (Editors only).
+
+    Editors may create a publishing house. When created the current
+    editor is added to the publisher's `editors` relation automatically.
+    """
+    if request.user.role != 'EDITOR':
+        messages.error(request, 'Only editors can create publishing houses.')
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        form = PublisherForm(request.POST)
+        if form.is_valid():
+            publisher = form.save()
+            try:
+                publisher.editors.add(request.user)
+            except Exception:
+                # best-effort: if DB constraints prevent adding, continue
+                pass
+            messages.success(request, f'Publishing house "{publisher.name}" created.')
+            return redirect('dashboard')
+    else:
+        form = PublisherForm()
+
+    return render(request, 'news/create_publisher.html', {'form': form})
 
 @login_required
 @permission_required('news.change_newsletter', raise_exception=True)
